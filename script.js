@@ -299,13 +299,20 @@ function renderSongs() {
         item.innerHTML = `
             <div class="drag-handle" title="드래그하여 순서 변경">⋮⋮</div>
             <div class="song-info">
-                <div class="song-name">${displayName}</div>
+                <input type="text" class="song-name-input" value="${escapeHtml(displayName)}" 
+                    onchange="updateSongName(${index}, this.value)" title="제목 수정">
                 <div class="song-meta">Hash: ${song.hash?.substring(0, 8)}... | Key: ${song.key || 'N/A'}</div>
             </div>
             <button class="btn btn-danger" onclick="deleteSong(${index})">삭제</button>
         `;
         songList.appendChild(item);
     });
+}
+
+function updateSongName(index, newName) {
+    const song = currentPlaylist.songs[index];
+    song.name = newName;
+    song.songName = newName; // 호환성을 위해 둘 다 업데이트
 }
 
 function deleteSong(index) {

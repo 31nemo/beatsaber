@@ -168,6 +168,31 @@ input[type="text"]:focus {
     cursor: grabbing;
 }
 
+.song-name-input {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--neon-blue);
+    font-size: 1.1rem;
+    font-weight: bold;
+    width: 100%;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.song-name-input:hover {
+    border-color: rgba(0, 242, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.song-name-input:focus {
+    border-color: var(--neon-blue);
+    background-color: var(--bg-dark);
+    box-shadow: 0 0 8px rgba(0, 242, 255, 0.2);
+}
+
 .song-info {
     flex-grow: 1;
 }
