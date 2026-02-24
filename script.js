@@ -287,7 +287,17 @@ function renderSongs() {
         item.className = 'song-item';
         // 'name' 필드와 'songName' 필드 모두 호환되도록 처리
         const displayName = song.name || song.songName || 'Unknown Song';
+        // 드래그 앤 드롭 지원
+        item.draggable = true;
+        item.dataset.index = index;
+
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragend', handleDragEnd);
+
         item.innerHTML = `
+            <div class="drag-handle" title="드래그하여 순서 변경">⋮⋮</div>
             <div class="song-info">
                 <div class="song-name">${displayName}</div>
                 <div class="song-meta">Hash: ${song.hash?.substring(0, 8)}... | Key: ${song.key || 'N/A'}</div>
@@ -299,10 +309,63 @@ function renderSongs() {
 }
 
 function deleteSong(index) {
-    currentPlaylist.songs.splice(index, 1);
+    if (confirm('이 노래를 삭제하시겠습니까?')) {
+        currentPlaylist.songs.splice(index, 1);
+        renderSongs();
+    }
+}
+
+function moveSong(index, direction) {
+    // 버튼 방식 대신 드래그 앤 드롭을 위해 남겨둠 (내부 로직용으로 전환 가능)
+    const songs = currentPlaylist.songs;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= songs.length) return;
+    const temp = songs[index];
+    songs[index] = songs[newIndex];
+    songs[newIndex] = temp;
     renderSongs();
 }
 
+let draggedIndex = null;
+
+function handleDragStart(e) {
+    draggedIndex = parseInt(this.dataset.index);
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const targetIndex = parseInt(this.dataset.index);
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const songs = currentPlaylist.songs;
+    const draggedItem = songs.splice(draggedIndex, 1)[0];
+    songs.splice(targetIndex, 0, draggedItem);
+
+    renderSongs();
+}
+
+function handleDragEnd() {
+    this.classList.remove('dragging');
+    draggedIndex = null;
+}
+
+function sortSongsAlphabetically() {
+    const songs = currentPlaylist.songs;
+    songs.sort((a, b) => {
+        const nameA = (a.name || a.songName || '').toLowerCase();
+        const nameB = (b.name || b.songName || '').toLowerCase();
+        return nameA.localeCompare(nameB, 'ko', { sensitivity: 'base' });
+    });
+    renderSongs();
+    alert('곡 목록이 가나다/ABC 순으로 정렬되었습니다.');
+}
 function openManualModal() {
     manualAddModal.style.display = 'block';
     // 입력창 초기화

@@ -150,6 +150,24 @@ input[type="text"]:focus {
     background-color: rgba(255, 255, 255, 0.02);
 }
 
+.song-item.dragging {
+    opacity: 0.5;
+    background-color: var(--neon-blue);
+    border: 2px dashed white;
+}
+
+.drag-handle {
+    cursor: grab;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    padding: 0 10px;
+    user-select: none;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
 .song-info {
     flex-grow: 1;
 }
