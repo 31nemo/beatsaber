@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beat Saber Playlist Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>BPLIST Manager</h1>
+            <p style="color: var(--text-secondary); margin-top: 10px;">Beat Saber 플레이리스트를 쉽게 읽고 편집하세요.</p>
+        </header>
+
+        <!-- 파일 로드 구역 -->
+        <div id="fileZone" class="file-section">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--neon-blue)" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+            <p style="margin-top: 15px; font-weight: 600;">.bplist 파일을 드래그하거나 클릭하여 열기</p>
+            <input type="file" id="fileInput" accept=".bplist">
+        </div>
+
+        <!-- 에디터 구역 (업로드 후 활성화) -->
+        <main id="editorMain" class="editor-main">
+            <div class="actions"
+                style="margin-top: 0; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
+                <button class="btn btn-primary" onclick="viewRawJson()">JSON 보기</button>
+                <button class="btn btn-danger" onclick="location.reload()">취소</button>
+                <button id="downloadBtn" class="btn btn-success" style="font-size: 1.1rem; padding: 12px 30px;">수정된 파일
+                    저장</button>
+            </div>
+
+            <section class="metadata-card">
+                <div class="cover-image-container">
+                    <img id="coverPreview" src="" alt="Album Cover">
+                    <input type="file" id="imageInput" accept="image/*">
+                    <div style="display: flex; gap: 5px; margin-top: 10px;">
+                        <button class="btn btn-primary" style="flex: 1;"
+                            onclick="document.getElementById('imageInput').click()">파일 선택</button>
+                        <button class="btn btn-primary"
+                            style="flex: 1; background-color: var(--neon-red); color: white;"
+                            onclick="openSearchModal()">이미지 검색</button>
+                    </div>
+                </div>
+
+                <div class="info-fields">
+                    <div class="input-group">
+                        <label for="playlistTitle">플레이리스트 제목</label>
+                        <input type="text" id="playlistTitle" placeholder="제목 입력">
+                    </div>
+                    <div class="input-group">
+                        <label for="playlistAuthor">작성자</label>
+                        <input type="text" id="playlistAuthor" placeholder="작성자 입력">
+                    </div>
+                    <div class="input-group">
+                        <label for="imageOverlayText">커버 텍스트 (합성)</label>
+                        <input type="text" id="imageOverlayText" placeholder="이미지 위에 표시할 글자 입력">
+                    </div>
+                </div>
+            </section>
+
+            <section class="song-list-container">
+                <div class="song-list-header">
+                    <h3>노래 목록 (<span id="songCount">0</span>)</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="file" id="folderInput" webkitdirectory directory style="display: none;">
+                        <button class="btn btn-primary" style="background-color: var(--accent); color: white;"
+                            onclick="document.getElementById('folderInput').click()">폴더로 추가</button>
+                        <button class="btn btn-primary" onclick="addPlaceholderSong()">수동 추가</button>
+                    </div>
+                </div>
+                <div id="songList" class="song-items">
+                    <!-- 노래 항목들이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 수동 추가 모달 -->
+    <div id="manualAddModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>노래 수동 추가</h2>
+                <span class="close-modal" onclick="closeManualModal()">&times;</span>
+            </div>
+            <div class="info-fields">
+                <div class="input-group">
+                    <label for="manualName">곡 제목 (Name)</label>
+                    <input type="text" id="manualName" placeholder="예: Ditto">
+                </div>
+                <div class="input-group">
+                    <label for="manualUploader">업로더 (Uploader)</label>
+                    <input type="text" id="manualUploader" placeholder="예: NewJeans">
+                </div>
+                <div class="input-group">
+                    <label for="manualKey">Key</label>
+                    <input type="text" id="manualKey" placeholder="예: 25f">
+                </div>
+                <div class="input-group">
+                    <label for="manualHash">해시 (Hash)</label>
+                    <input type="text" id="manualHash" placeholder="40자리 SHA-1 해시">
+                </div>
+                <div class="input-group">
+                    <label for="manualLevelId">Level ID</label>
+                    <input type="text" id="manualLevelId" placeholder="custom_level_HASH">
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn btn-danger" onclick="closeManualModal()">취소</button>
+                    <button class="btn btn-success" onclick="saveManualSong()">곡 확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이미지 검색 모달 -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>커버 이미지 검색</h2>
+                <span class="close-modal" onclick="closeSearchModal()">&times;</span>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="imageSearchInput" placeholder="검색어 입력 (예: NewJeans, K-POP)">
+                <button class="btn btn-primary" onclick="searchImages()">검색</button>
+            </div>
+            <div id="searchResults" class="search-results-grid">
+                <!-- 검색 결과가 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
